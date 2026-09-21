@@ -249,3 +249,59 @@ node scripts/rgh.js order-detail <orderNo>
 |------|------|------|------|
 | orderNo | string | ✅ | 订单编号 |
 
+---
+
+## pre-cancel
+
+预取消酒店订单：查询违约金/罚金，并获取 10 分钟有效的确认凭证 `confirmId`。
+
+**输入**：
+
+```bash
+node scripts/rgh.js pre-cancel <orderNo>
+# 或
+node scripts/rgh.js pre-cancel --order-no <orderNo>
+```
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| --order-no | string | ✅ | 待取消的订单号 |
+
+**输出**：
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| success | boolean | 是否成功 |
+| canCancel | boolean | 该订单当前是否支持在线取消 |
+| confirmId | string | 取消确认凭证（10 分钟有效，传入 confirm-cancel） |
+| bookingId | string | 预订号（传入 confirm-cancel） |
+| penaltyAmount | float | 扣除的取消手续费/违约金 |
+| message | string | 状态说明文案（无法在线取消时含客服热线） |
+
+---
+
+## confirm-cancel
+
+确认取消酒店订单（不可撤销操作，必须获得用户明确同意并携带 `pre-cancel` 返回的凭证）。
+
+**输入**：
+
+```bash
+node scripts/rgh.js confirm-cancel --order-no <orderNo> --booking-id <bookingId> --confirm-id <confirmId> [--description <取消原因>]
+```
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| --order-no | string | ✅ | 订单号 |
+| --booking-id | string | ✅ | pre-cancel 返回的预订号 |
+| --confirm-id | string | ✅ | pre-cancel 返回的凭证 ID |
+| --description | string | ❌ | 可选的取消原因备注 |
+
+**输出**：
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| success | boolean | 是否取消成功 |
+| message | string | 取消结果消息 |
+| orderNo | string | 订单编号 |
+
