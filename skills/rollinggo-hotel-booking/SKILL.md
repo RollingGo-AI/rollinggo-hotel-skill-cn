@@ -120,7 +120,7 @@ CLI 工具内置了版本检测。当你在执行任何 `rgh` 命令时，如果
 
 #### Step 0：登录授权检查
 - 执行 `node scripts/rgh.js status`（也可使用 `whoami`）检查登录状态。
-- 若未登录，执行 `node scripts/rgh.js login`（⚠️ **必须以异步/后台模式运行**，如 `WaitMsBeforeAsync=2000`）。从输出提取授权链接（`https://rollinggo.store/s/xxx`），回复给用户完成授权。
+- 若未登录，执行 `node scripts/rgh.js login`（⚠️ **必须以异步/后台模式运行**，如 `WaitMsBeforeAsync=2000`）。从输出提取授权链接（`https://api.rollinggo.store/s/xxx`），回复给用户完成授权。
 
 #### Step 1：信息收集
 - 确认目的地（必须）、入住日期（默认明天）、入住晚数（默认 1 晚）、人数（默认 2 人）。
