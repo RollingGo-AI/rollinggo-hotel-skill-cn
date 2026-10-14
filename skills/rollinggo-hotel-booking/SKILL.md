@@ -1,6 +1,6 @@
 ---
 name: rollinggo-hotel-booking
-version: "1.1.5"
+version: "1.1.6"
 repository: "https://github.com/RollingGo-AI/rollinggo-hotel-skill-CN"
 description: RollingGo 酒店搜索与预订助手，通过调用 RollingGo 酒店服务接口实现酒店查询与订单全流程。支持场景：① 按城市/景点/地铁站/机场等地点搜索酒店 ② 按星级、预算、标签（泳池/含早/亲子/宠物友好等）筛选 ③ 查询指定酒店的实时房型与价格 ④ 对比多家酒店 ⑤ 引导用户完成预订 ⑥ 取消订单（预取消查询罚金与确认取消）。触发词：找酒店、订酒店、搜酒店、酒店推荐、酒店查询、附近酒店、五星酒店、民宿、度假村、查房价、看房型、入住、住哪、住宿、rollinggo、旅游住宿、出差住宿、亲子酒店、带泳池的酒店、含早餐酒店、取消订单、退订酒店、退房退款、取消预订。
 metadata:
@@ -111,25 +111,26 @@ CLI 工具内置了版本检测。当你在执行任何 `rgh` 命令时，如果
 ## 工作流程与动态 CLI 探知
 
 > 💡 **动态命令与参数自探知法则 (Self-Discovery Rule)**：
-> 1. **代理调用**：所有 CLI 命令统一通过代理脚本调用：`node scripts/rgh.js <子命令>`（无 Node 环境时使用 `python scripts/rgh.py <子命令>`），以确保自动完成环境解析与 `CLIENT_ID` (rollinggoskill) 的挂载。
-> 2. **动态参数探知**：执行任何子命令前，**先运行 `node scripts/rgh.js <子命令> --help` 获取实时命令行参数帮助**，并按最新的 `--help` 动态拼装命令参数！
+> 1. **命令调用**：直接调用原生 CLI 命令：`rgh <子命令>`（如 `rgh status`、`rgh search-hotels`）。
+> 2. **渠道定制 (CLIENT_ID)**：支持零代码渠道定制。若需使用特定渠道身份，可在技能目录放置 `client_id.txt`，或在初次登录时传入 `rgh login --client-id <id>`（如 `rgh login --client-id didaskill`），CLI 会自动记住并持久化配置。默认值为 `rollinggoskill`。
+> 3. **动态参数探知**：执行任何子命令前，**先运行 `rgh <子命令> --help` 获取实时命令行参数帮助**，并按最新的 `--help` 动态拼装命令参数！
 
 ---
 
 ### 业务步骤指南
 
 #### Step 0：登录授权检查
-- 执行 `node scripts/rgh.js status`（也可使用 `whoami`）检查登录状态。
-- 若未登录，执行 `node scripts/rgh.js login`（⚠️ **必须以异步/后台模式运行**，如 `WaitMsBeforeAsync=2000`）。从输出提取授权链接（`https://api.rollinggo.store/s/xxx`），回复给用户完成授权。
+- 执行 `rgh status`（也可使用 `whoami`）检查登录状态。
+- 若未登录，执行 `rgh login`（需要定制渠道时可加 `--client-id <id>`，⚠️ **必须以异步/后台模式运行**，如 `WaitMsBeforeAsync=2000`）。从输出提取授权链接（`https://api.rollinggo.store/s/xxx`），回复给用户完成授权。
 
 #### Step 1：信息收集
 - 确认目的地（必须）、入住日期（默认明天）、入住晚数（默认 1 晚）、人数（默认 2 人）。
 
 #### Step 2：获取标签字典（按需）
-- 遇特色需求（如泳池、早餐、亲子、宠物等），先执行 `node scripts/rgh.js hotel-tags` 精确匹配标签名称。
+- 遇特色需求（如泳池、早餐、亲子、宠物等），先执行 `rgh hotel-tags` 精确匹配标签名称。
 
 #### Step 3：搜索酒店
-- 先运行 `node scripts/rgh.js search-hotels --help` 查看最新筛选参数，根据用户需求拼装命令。
+- 先运行 `rgh search-hotels --help` 查看最新筛选参数，根据用户需求拼装命令。
 - **placeType 选择规则**（必须精确匹配）：`城市`、`机场`、`景点`、`火车站`、`地铁站`、`酒店`、`区/县`、`详细地址`。
 
 **搜索结果展示模板**（每家酒店一个卡片）：
@@ -146,7 +147,7 @@ CLI 工具内置了版本检测。当你在执行任何 `rgh` 命令时，如果
 返回 3-5 家酒店后，询问用户："想了解哪家的详细房型和价格？"
 
 #### Step 4：查询房型与实时价格
-- 先运行 `node scripts/rgh.js hotel-detail --help` 查看参数，传入选中的 `hotelId` 查询实时房态报价。
+- 先运行 `rgh hotel-detail --help` 查看参数，传入选中的 `hotelId` 查询实时房态报价。
 
 **房型展示模板**（每个房型一条）：
 
@@ -159,8 +160,8 @@ CLI 工具内置了版本检测。当你在执行任何 `rgh` 命令时，如果
 展示 3-5 个推荐房型后，引导用户回复：“请告诉我您选择的房型名称，我来为您锁定价格并办理下单。”
 
 #### Step 5：价格确认与下单（安全门控）
-1. 运行 `node scripts/rgh.js price-confirm --help` 查看参数，锁定价格并获取凭证 `referenceNo`。
-2. 确认联系人拼音姓名与邮箱后，运行 `node scripts/rgh.js book --help` 查看参数，提交订单并提取支付链接。
+1. 运行 `rgh price-confirm --help` 查看参数，锁定价格并获取凭证 `referenceNo`。
+2. 确认联系人拼音姓名与邮箱后，运行 `rgh book --help` 查看参数，提交订单并提取支付链接。
 
 **待支付订单展示模板**：
 *(【极其重要】：绝不能臆造或编造支付方式（如“自动识别环境，支持支付宝或微信”）。必须严格按照以下模板输出，绝不允许自行添加任何关于支付环境或支付方式的说明！)*
@@ -177,7 +178,7 @@ CLI 工具内置了版本检测。当你在执行任何 `rgh` 命令时，如果
 ```
 
 #### Step 6：查询订单与详情
-- 运行 `node scripts/rgh.js orders --help` 或 `node scripts/rgh.js order-detail --help` 查询用户历史订单或单条订单详情。
+- 运行 `rgh orders --help` 或 `rgh order-detail --help` 查询用户历史订单或单条订单详情。
 
 #### Step 7：取消订单（高危两步确认）
 > ⚠️ **高危安全门控**：取消订单属于**不可逆操作**，取消后不可撤销！必须严格执行两步确认：
@@ -185,9 +186,9 @@ CLI 工具内置了版本检测。当你在执行任何 `rgh` 命令时，如果
 > 2. 向用户如实汇报违约金金额与预计退款，**必须等用户明确肯定答复后**，方可运行 `confirm-cancel` 提交取消。
 
 1. **预取消查询违约金**：
-   - 先运行 `node scripts/rgh.js pre-cancel --help` 查看参数。
-   - 若用户未提供订单号，先通过 `node scripts/rgh.js orders` 定位订单号。
-   - 执行 `node scripts/rgh.js pre-cancel --order-no <orderNo>`。
+   - 先运行 `rgh pre-cancel --help` 查看参数。
+   - 若用户未提供订单号，先通过 `rgh orders` 定位订单号。
+   - 执行 `rgh pre-cancel --order-no <orderNo>`。
    - 提取 `canCancel`、`penaltyAmount`、`confirmId`、`bookingId`。若 `canCancel` 为 false，告知用户原因或客服指引。
 
 2. **向用户核实违约金与取消意愿**：
@@ -202,8 +203,8 @@ CLI 工具内置了版本检测。当你在执行任何 `rgh` 命令时，如果
 ```
 
 3. **用户明确确认后，执行确认取消**：
-   - 先运行 `node scripts/rgh.js confirm-cancel --help` 查看参数。
-   - 执行 `node scripts/rgh.js confirm-cancel --order-no <orderNo> --booking-id <bookingId> --confirm-id <confirmId>`。
+   - 先运行 `rgh confirm-cancel --help` 查看参数。
+   - 执行 `rgh confirm-cancel --order-no <orderNo> --booking-id <bookingId> --confirm-id <confirmId>`。
    - 向用户清晰展示取消成功结果。
 
 **取消成功展示模板**：

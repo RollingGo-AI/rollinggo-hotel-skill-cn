@@ -242,7 +242,7 @@
 **输入**：
 
 ```bash
-node scripts/rgh.js order-detail <orderNo>
+rgh order-detail <orderNo>
 ```
 
 | 参数 | 类型 | 必填 | 说明 |
@@ -258,9 +258,9 @@ node scripts/rgh.js order-detail <orderNo>
 **输入**：
 
 ```bash
-node scripts/rgh.js pre-cancel <orderNo>
+rgh pre-cancel <orderNo>
 # 或
-node scripts/rgh.js pre-cancel --order-no <orderNo>
+rgh pre-cancel --order-no <orderNo>
 ```
 
 | 参数 | 类型 | 必填 | 说明 |
@@ -287,7 +287,7 @@ node scripts/rgh.js pre-cancel --order-no <orderNo>
 **输入**：
 
 ```bash
-node scripts/rgh.js confirm-cancel --order-no <orderNo> --booking-id <bookingId> --confirm-id <confirmId> [--description <取消原因>]
+rgh confirm-cancel --order-no <orderNo> --booking-id <bookingId> --confirm-id <confirmId> [--description <取消原因>]
 ```
 
 | 参数 | 类型 | 必填 | 说明 |
